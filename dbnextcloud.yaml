@@ -1,0 +1,57 @@
+# Datenbank für die Nextcloud
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: db
+  name: nextcloud-mariadb
+  namespace: nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      volumes:
+      - name: nextcloud-storage11               # Name vom PVC
+        persistentVolumeClaim:
+          claimName: nextcloud-pvc11
+      containers:
+      - env:
+        - name: MYSQL_DATABASE
+          value: nextcloud          #Datenbankname
+        - name: MYSQL_PASSWORD
+          value: sml12345           #Passwort
+        - name: MYSQL_USER
+          value: nextcloud
+        - name: MYSQL_ROOT_PASSWORD
+          value: sml12345           #Root-Password
+        image: mariadb
+        name: db
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: db
+        volumeMounts:
+        - mountPath: /datenbank
+          name: nextcloud-storage11
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-nextcloud-db
+  namespace: nextcloud
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+  selector:
+    app: db
+

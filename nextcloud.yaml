@@ -1,0 +1,55 @@
+# Nextcloud
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-deploy
+  namespace: nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      volumes:
+      - name: nextcloud-storage10               # < Name vom PVC
+        persistentVolumeClaim:
+          claimName: nextcloud-pvc10
+      containers:
+      - name: nextcloud
+        image: nextcloud:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: PGID
+          value: "100" # < group "user"
+        - name: PUID
+          value: "1041" # < user "docker"
+        - name: TZ
+          value: Europe/Zurich
+        volumeMounts:
+        - mountPath: /config
+          name: nextcloud-storage10
+          subPath: config
+        - mountPath: /var/www/html/data
+          name: nextcloud-storage10
+          subPath: data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-service
+  namespace: nextcloud
+spec:
+  selector:
+    app: nextcloud
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  type: LoadBalancer

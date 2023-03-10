@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nextcloud-pv11 # Name vom Persisant-Volume in Kubenetes
+  namespace: nextcloud      # Namespace
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 10Gi            #  maximale Grösse
+  accessModes:
+    - ReadWriteOnce         # Kann schreiben
+  persistentVolumeReclaimPolicy: Retain # kann mehrmals geclaimt werden
+  hostPath:
+    path: /home/vmadmin/nextcloud-db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nextcloud-pvc11  #  Name des Volume-claim
+  namespace: nextcloud    #  Namespace nextcloud
+spec:
+  storageClassName: ""
+  volumeName: nextcloud-pv11
+  accessModes:
+    - ReadWriteOnce       #  Schreibrechte
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi        #  Grösse des Storage
